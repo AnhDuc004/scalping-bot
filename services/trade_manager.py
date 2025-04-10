@@ -31,27 +31,29 @@ class TradeManager:
 
                 tp = buy_price * (1 + TAKE_PROFIT_PERCENT / 100)
                 sl = buy_price * (1 - STOP_LOSS_PERCENT / 100)
-                print(f"[TP/SL] TP: {tp:.2f} - SL: {sl:.2f}")
+                print(f"[TP/SL] TP: {tp:.4f} - SL: {sl:.4f}")
+
+                coin = SYMBOL.split('/')[0]  # Ví dụ: EOS từ 'EOS/USDT'
 
                 while True:
-                    # Lấy số dư tài khoản (kiểm tra dữ liệu trả về)
-                    balance_data = self.client.get_balance()  # Không truyền SYMBOL
+                    # Lấy số dư đồng coin (EOS, BTC, v.v...)
+                    balance_data = self.client.get_balance()
 
-                    # Giả sử balance_data chứa thông tin tài khoản và số dư trong 'free' hoặc 'balance'
-                    # Cần trích xuất số dư cho SYMBOL cụ thể
-                    balance = balance_data.get('free', {}).get(SYMBOL, 0.0)  # Trích xuất số dư cho SYMBOL
+                    try:
+                        balance = balance_data[coin]['free']
+                    except KeyError:
+                        print(f"[Trade] Không lấy được số dư {coin}. Dữ liệu: {balance_data}")
+                        break
 
-                    print(f"[Trade] Số dư hiện tại: {balance}")
+                    print(f"[Trade] Số dư hiện tại ({coin}): {balance}")
 
-                    # Kiểm tra số dư trước khi bán
                     if balance < TRADE_AMOUNT:
-                        print(f"[Trade] Không đủ số dư. Số dư hiện tại: {balance}")
-                        break  # Dừng giao dịch nếu không đủ số dư
+                        print(f"[Trade] Không đủ số dư để bán. Số dư hiện tại: {balance}")
+                        break
 
                     bid, _ = self.client.get_price(SYMBOL)
-                    print(f"[Monitor] Giá hiện tại: {bid:.2f}")
+                    print(f"[Monitor] Giá hiện tại: {bid:.4f}")
 
-                    # Kiểm tra và thực hiện chốt lời hoặc cắt lỗ
                     if bid >= tp:
                         print("[TP] Chốt lời...")
                         self.client.create_market_sell(SYMBOL, TRADE_AMOUNT)
@@ -67,4 +69,3 @@ class TradeManager:
                 print("[Trade] Spread lớn quá, chờ cơ hội...")
 
             time.sleep(5)
-
