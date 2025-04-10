@@ -13,7 +13,7 @@ secret_key = os.getenv('OKX_SECRET_KEY')
 passphrase = os.getenv('OKX_PASSPHRASE')
 
 # Tạo client và chạy bot
-client = OKXClient(api_key, secret_key, passphrase, use_demo=True)
-strategy = ReversalStrategy(client)    # đổi chiến lược
+client = OKXClient(api_key, secret_key, passphrase, use_demo=True) # Chạy trên môi trường demo (sandbox) / tắt demo giao dịch thật (LIVE) => False
+strategy = ReversalStrategy(client)    # đổi chiến lược (scalping sang reversal hoặc ... nếu a có thêm chiến lược khác)
 manager = TradeManager(client, strategy)
 manager.run()

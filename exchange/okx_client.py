@@ -1,28 +1,33 @@
 import ccxt
 import time
 
-
 class OKXClient:
     def __init__(self, api_key, secret_key, passphrase, use_demo=False):
         self.api_key = api_key
         self.secret_key = secret_key
         self.passphrase = passphrase
 
+        # use_demo=True: sử dụng môi trường sandbox (demo)
+        # use_demo=False: giao dịch thật (LIVE)
         self.exchange = ccxt.okx({
             'apiKey': self.api_key,
             'secret': self.secret_key,
             'password': self.passphrase,
             'enableRateLimit': True,
             'options': {
-                'defaultType': 'spot',
-                'demoTrading': use_demo,
+                'defaultType': 'spot',     # Giao dịch spot, có thể đổi sang 'future' nếu dùng hợp đồng
+                'demoTrading': use_demo,   # Cho biết đây là chế độ demo (OKX hỗ trợ cho testnet)
             },
         })
 
+        # Bật/tắt chế độ sandbox (chế độ giả lập)
+        # Khi bạn chuyển sang chạy LIVE, chỉ cần set use_demo=False
         self.exchange.set_sandbox_mode(use_demo)
+
+        # Tải thông tin thị trường
         self.exchange.load_markets()
 
-        print("Sandbox Mode:", use_demo)
+        print("Sandbox Mode:", use_demo)  # In ra xem đang ở chế độ nào
         self.print_initial_balances()
 
     def print_initial_balances(self):
@@ -56,6 +61,7 @@ class OKXClient:
             if isinstance(order, float):
                 return order
 
+            # Đợi khớp giá trung bình (average), nếu chưa khớp sẽ fetch lại
             retries = 0
             while order.get('average') is None and retries < 5:
                 print("[OKXClient] Lệnh chưa có giá khớp, đang chờ...")
